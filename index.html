@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GRAND TOUR & CASINO - 桃鉄風 × ブラックジャック Discord Activity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800;900&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+<!-- Discord Embedded App SDK (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk/dist/index.min.js"></script>
+<style>
+:root {
+  --bg-gradient: radial-gradient(circle at 50% 20%, #151932 0%, #0a0c18 100%);
+  --gold-glow: #ffdf6d;
+  --gold-dark: #b8860b;
+  --felt-green: radial-gradient(circle, #0e5c33 0%, #07381e 80%, #041f11 100%);
+  --accent-cyan: #00f2fe;
+  --accent-magenta: #ff007f;
+  --accent-orange: #ff9900;
+  --glass-bg: rgba(20, 25, 45, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --glass-card: rgba(10, 15, 30, 0.88);
+  --shadow-neon: 0 0 20px rgba(0, 242, 254, 0.4);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+body {
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+  background: var(--bg-gradient);
+  color: #fff;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Background Animated Canvas */
+#ambient-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* App Header */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: rgba(10, 14, 28, 0.88);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+}
+
+.logo-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-icon {
+  font-size: 26px;
+  filter: drop-shadow(0 0 8px #ffdf6d);
+  animation: pulseLogo 3s infinite ease-in-out;
+}
+@keyframes pulseLogo {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.1) rotate(5deg); }
+}
+.logo-title {
+  font-family: 'Cinzel', 'M PLUS Rounded 1c', serif;
+  font-size: 18px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #fff 0%, var(--gold-glow) 50%, #ff8c00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 1px;
+}
+.logo-sub {
+  font-size: 10px;
+  color: #94a3b8;
+  display: block;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-sound {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+.btn-sound:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.btn-sound.active {
+  background: linear-gradient(135deg, #00f2fe, #4facfe);
+  color: #000;
+  font-weight: bold;
+  border-color: transparent;
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.5);
+}
+
+.room-badge {
+  background: rgba(0, 242, 254, 0.15);
+  border: 1px solid var(--accent-cyan);
+  color: var(--accent-cyan);
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+/* Main Layout */
+.main-wrapper {
+  position: relative;
+  z-index: 10;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 14px 16px 36px;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 16px;
+}
+
+@media (max-width: 1024px) {
+  .main-wrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Glass Panels */
+.panel {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  padding: 16px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Panel Header Ribbon */
+.panel-ribbon {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 8px;
+}
+.panel-title {
+  font-size: 15px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #e2e8f0;
+}
+.panel-badge {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  background: rgba(255, 215, 0, 0.15);
+  color: var(--gold-glow);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+/* Route Map View */
+.map-container {
+  position: relative;
+  width: 100%;
+  height: 350px;
+  border-radius: 14px;
+  background: #070914;
+  border: 1px solid rgba(255,255,255,0.08);
+  overflow: hidden;
+  box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+}
+#route-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.map-overlay-info {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(10, 14, 28, 0.85);
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 11px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+/* Player Status Bar */
+.players-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.player-card {
+  background: rgba(15, 22, 45, 0.7);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: all 0.3s;
+  position: relative;
+}
+.player-card.active-turn {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 18px rgba(0, 242, 254, 0.4);
+  transform: translateY(-2px);
+  background: rgba(20, 32, 65, 0.85);
+}
+.player-card.active-turn::after {
+  content: 'TURN';
+  position: absolute;
+  top: -8px;
+  right: 10px;
+  background: var(--accent-cyan);
+  color: #000;
+  font-size: 9px;
+  font-weight: 900;
+  padding: 1px 6px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+.p-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.p-avatar {
+  font-size: 20px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.p-name {
+  font-weight: 800;
+  font-size: 13px;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+.p-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2px;
+}
+.p-money {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--gold-glow);
+  text-shadow: 0 0 8px rgba(255, 223, 109, 0.3);
+}
+.p-debt {
+  font-size: 10px;
+  color: #ff5555;
+  font-weight: bold;
+}
+.p-location {
+  font-size: 11px;
+  color: #38bdf8;
+}
+.p-checkpoints {
+  font-size: 10px;
+  color: #a0aec0;
+}
+
+/* Casino Felt Section */
+.casino-section {
+  background: var(--felt-green);
+  border: 4px solid #3d2314;
+  border-radius: 18px;
+  padding: 16px;
+  position: relative;
+  box-shadow: inset 0 0 50px rgba(0,0,0,0.9), 0 10px 30px rgba(0,0,0,0.6);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 420px;
+}
+.casino-section::before {
+  content: '';
+  position: absolute;
+  top: -6px; left: -6px; right: -6px; bottom: -6px;
+  border: 2px solid #b8860b;
+  border-radius: 20px;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.casino-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px dashed rgba(255,255,255,0.15);
+  padding-bottom: 8px;
+}
+.casino-title {
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  color: var(--gold-glow);
+  letter-spacing: 1px;
+}
+.table-payout {
+  font-size: 10px;
+  color: rgba(255,255,255,0.7);
+  font-weight: bold;
+}
+
+.hand-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 10px 0;
+}
+.hand-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+.score-badge {
+  background: rgba(0,0,0,0.6);
+  border: 1px solid var(--gold-glow);
+  color: var(--gold-glow);
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.cards-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 88px;
+  perspective: 800px;
+}
+
+/* 3D Playing Card */
+.card-item {
+  width: 58px;
+  height: 82px;
+  border-radius: 6px;
+  background: #fff;
+  color: #111;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 3px 5px;
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  box-shadow: 2px 3px 12px rgba(0,0,0,0.6);
+  animation: dealCard 0.35s ease-out forwards;
+}
+@keyframes dealCard {
+  0% { opacity: 0; transform: translateY(-30px) scale(0.6) rotate(-10deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+}
+.card-item.red {
+  color: #d90429;
+}
+.card-item.hidden-card {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e1b4b 100%);
+  border: 2px solid #fff;
+}
+.card-item.hidden-card::after {
+  content: '♠';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 22px;
+  color: rgba(255,255,255,0.25);
+}
+.card-corner {
+  font-size: 11px;
+  line-height: 1;
+}
+.card-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20px;
+}
+
+/* Casino Controls & Chips */
+.casino-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 12px;
+  padding: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.bet-selector {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chip-btn {
+  background: radial-gradient(circle, #2d3748 0%, #1a202c 100%);
+  border: 2px dashed #ecc94b;
+  border-radius: 50%;
+  width: 46px;
+  height: 46px;
+  color: #ecc94b;
+  font-weight: 900;
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+}
+.chip-btn:hover:not(:disabled) {
+  transform: scale(1.1) rotate(6deg);
+  border-color: #fff;
+  color: #fff;
+}
+.chip-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.action-buttons-row {
+  display: flex;
+  gap: 6px;
+}
+.btn-action {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 800;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: all 0.2s;
+  color: #fff;
+}
+.btn-action:hover:not(:disabled) {
+  filter: brightness(1.2);
+}
+.btn-action:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.btn-hit { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+.btn-stand { background: linear-gradient(135deg, #16a34a, #15803d); }
+.btn-double { background: linear-gradient(135deg, #d97706, #b45309); }
+.btn-loan { background: linear-gradient(135deg, #dc2626, #991b1b); border: 1px solid #ff7777; font-size: 10px; }
+
+/* Travel Phase Section */
+.travel-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.travel-ticket-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+}
+.ticket-card {
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.ticket-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 4px; height: 100%;
+  background: var(--accent-cyan);
+}
+.ticket-card:hover:not(.disabled) {
+  transform: translateY(-2px);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 4px 14px rgba(0, 242, 254, 0.25);
+}
+.ticket-card.disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.ticket-name {
+  font-weight: 800;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.ticket-cost {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--gold-glow);
+}
+.ticket-dest {
+  font-size: 11px;
+  color: #38bdf8;
+  font-weight: bold;
+}
+
+/* Spectator Waiting Banner */
+.spectator-banner {
+  background: rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 12px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 13px;
+  color: #cbd5e1;
+  font-weight: bold;
+  animation: pulseWait 2s infinite ease-in-out;
+}
+@keyframes pulseWait {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; border-color: var(--accent-cyan); }
+}
+
+/* Modal Popup */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(5, 8, 20, 0.85);
+  backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  padding: 16px;
+}
+.modal-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.modal-box {
+  background: var(--glass-card);
+  border: 2px solid rgba(255, 215, 0, 0.4);
+  border-radius: 20px;
+  max-width: 520px;
+  width: 100%;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(255, 215, 0, 0.2);
+}
+.modal-icon { font-size: 46px; margin-bottom: 8px; }
+.modal-title { font-size: 20px; font-weight: 900; margin-bottom: 6px; }
+.modal-subtitle { font-size: 12px; color: #94a3b8; margin-bottom: 12px; }
+.modal-content {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #e2e8f0;
+  margin-bottom: 16px;
+  text-align: left;
+}
+.modal-btn {
+  background: linear-gradient(135deg, var(--gold-glow), var(--gold-dark));
+  color: #000;
+  font-weight: 900;
+  font-size: 14px;
+  padding: 10px 28px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+}
+
+/* Setup Config Modal */
+.config-input {
+  width: 100%;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  margin-bottom: 10px;
+  outline: none;
+}
+.config-input:focus {
+  border-color: var(--accent-cyan);
+}
+
+.toast-msg {
+  position: fixed;
+  top: 65px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid var(--accent-cyan);
+  padding: 8px 20px;
+  border-radius: 999px;
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s;
+}
+.toast-msg.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+#confetti-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 1500;
+}
+</style>
+</head>
+<body>
+
+<canvas id="ambient-canvas"></canvas>
+<canvas id="confetti-canvas"></canvas>
+
+<header>
+  <div class="logo-area">
+    <div class="logo-icon">🚄✈️</div>
+    <div>
+      <div class="logo-title">GRAND TOUR & CASINO</div>
+      <span class="logo-sub">Discord Activity • リアルタイム同期マルチプレイ</span>
+    </div>
+  </div>
+  <div class="header-controls">
+    <div class="room-badge" id="room-display">ROOM: 接続中...</div>
+    <button id="btn-toggle-bgm" class="btn-sound"><span>🎵 BGM: OFF</span></button>
+    <button id="btn-toggle-sfx" class="btn-sound active"><span>🔔 SFX: ON</span></button>
+  </div>
+</header>
+
+<div class="toast-msg" id="toast-msg">メッセージ</div>
+
+<main class="main-wrapper">
+  <!-- Left Column: Map & Tour Progression -->
+  <section class="panel">
+    <div class="panel-ribbon">
+      <div class="panel-title">
+        <span id="mode-icon">🗺️</span>
+        <span id="mode-title-text">日本一周・鉄道幹線ツアー</span>
+      </div>
+      <div class="panel-badge" id="lap-target-badge">全チェックポイント制覇でゴール！</div>
+    </div>
+
+    <!-- Map Canvas Area -->
+    <div class="map-container">
+      <canvas id="route-canvas"></canvas>
+      <div class="map-overlay-info" id="map-info">📍 Discordの通話メンバーとリアルタイム同期中</div>
+    </div>
+
+    <!-- Player Status Grid -->
+    <div class="players-grid" id="players-grid"></div>
+  </section>
+
+  <!-- Right Column: Interactive Casino & Travel Controls -->
+  <section class="panel" style="display:flex; flex-direction:column; gap:16px;">
+    
+    <!-- Blackjack Table Section -->
+    <div class="casino-section" id="casino-section">
+      <div class="casino-header">
+        <div class="casino-title">♠️ CASINO LOUNGE ♠️</div>
+        <div class="table-payout">BLACKJACK PAYS 3 TO 2 • DEALER STANDS ON 17</div>
+      </div>
+
+      <div class="hand-container">
+        <!-- Dealer Hand -->
+        <div>
+          <div class="hand-label">
+            <span>DEALER</span>
+            <span class="score-badge" id="dealer-score">?</span>
+          </div>
+          <div class="cards-row" id="dealer-cards"></div>
+        </div>
+
+        <!-- Current Player Hand -->
+        <div>
+          <div class="hand-label">
+            <span id="player-hand-name">PLAYER</span>
+            <span class="score-badge" id="player-score">0</span>
+          </div>
+          <div class="cards-row" id="player-cards"></div>
+        </div>
+      </div>
+
+      <!-- Casino Action Controls -->
+      <div class="casino-actions">
+        <!-- Waiting for Other Player's Turn Banner -->
+        <div class="spectator-banner" id="spectator-banner" style="display:none;">
+          ⏳ 他のプレイヤーの手番です。操作を見守っています...
+        </div>
+
+        <!-- Betting Phase Row -->
+        <div class="bet-selector" id="bet-row">
+          <span style="font-size:11px; color:#cbd5e1; font-weight:bold;">賭け金を選択:</span>
+          <button class="chip-btn" onclick="MultiGame.placeBet(5000)">5K</button>
+          <button class="chip-btn" onclick="MultiGame.placeBet(10000)">10K</button>
+          <button class="chip-btn" onclick="MultiGame.placeBet(25000)">25K</button>
+          <button class="chip-btn" onclick="MultiGame.placeBet('ALL')" style="border-color:#ff5555; color:#ff7777;">ALL</button>
+          <button class="btn-action btn-loan" onclick="MultiGame.takeLoan()">⚠️ ヤミ金借入 (+5万)</button>
+        </div>
+
+        <!-- Blackjack Playing Phase Row -->
+        <div class="action-buttons-row" id="action-row" style="display:none;">
+          <button class="btn-action btn-hit" onclick="MultiGame.hit()">Hit (引く)</button>
+          <button class="btn-action btn-stand" onclick="MultiGame.stand()">Stand (勝負)</button>
+          <button class="btn-action btn-double" onclick="MultiGame.doubleDown()">Double Down</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Travel Station & Tickets Section -->
+    <div class="travel-section" id="travel-section" style="display:none;">
+      <div class="panel-ribbon" style="margin-bottom:6px;">
+        <div class="panel-title" style="font-size:14px;"><span>🎫 移動チケットの購入 & 進行</span></div>
+        <span style="font-size:11px; color:#38bdf8;" id="travel-curr-location">現在地: 東京</span>
+      </div>
+      <div class="travel-ticket-grid" id="ticket-grid"></div>
+    </div>
+
+  </section>
+</main>
+
+<!-- Universal Popup Modal -->
+<div class="modal-backdrop" id="game-modal">
+  <div class="modal-box">
+    <div class="modal-icon" id="modal-icon">🌸</div>
+    <div class="modal-title" id="modal-title">イベントタイトル</div>
+    <div class="modal-subtitle" id="modal-sub">地域名・説明</div>
+    <div class="modal-content" id="modal-body"></div>
+    <button class="modal-btn" id="modal-btn" onclick="MultiGame.closeModal()">了解</button>
+  </div>
+</div>
+
+<!-- Firebase Config Setup Modal (Shown if firebase config not set) -->
+<div class="modal-backdrop" id="config-modal">
+  <div class="modal-box" style="text-align:left;">
+    <div class="modal-title" style="text-align:center;">🔥 Firebase 設定</div>
+    <div class="modal-subtitle" style="text-align:center;">FirebaseコンソールからRealtime Databaseの設定を入力してください</div>
+    <label style="font-size:11px; color:#94a3b8;">Database URL:</label>
+    <input class="config-input" id="cfg-db-url" placeholder="https://your-project-default-rtdb.firebaseio.com">
+    <label style="font-size:11px; color:#94a3b8;">API Key:</label>
+    <input class="config-input" id="cfg-api-key" placeholder="AIzaSy...">
+    <label style="font-size:11px; color:#94a3b8;">Project ID:</label>
+    <input class="config-input" id="cfg-project-id" placeholder="your-project-id">
+    <div style="text-align:center; margin-top:10px;">
+      <button class="modal-btn" onclick="saveFirebaseConfig()">接続する</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase JS SDK (ES Modules via script type=module) -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+// Global Firebase Instance Bridge
+window.FirebaseBridge = {
+  db: null,
+  roomRef: null,
+  init(config, roomId) {
+    const app = initializeApp(config);
+    this.db = getDatabase(app);
+    this.roomRef = ref(this.db, `rooms/${roomId}`);
+  },
+  saveState(state) {
+    if (this.roomRef) {
+      set(this.roomRef, state);
+    }
+  },
+  updateState(partial) {
+    if (this.roomRef) {
+      update(this.roomRef, partial);
+    }
+  },
+  listen(callback) {
+    if (this.roomRef) {
+      onValue(this.roomRef, (snapshot) => {
+        const val = snapshot.val();
+        if (val) callback(val);
+      });
+    }
+  }
+};
+</script>
+
+<script>
+/**
+ * ===================================================================
+ * 1. Web Audio Synthesizer (BGM & SFX Engine)
+ * ===================================================================
+ */
+const SoundEngine = {
+  ctx: null,
+  bgmGain: null,
+  sfxGain: null,
+  bgmPlaying: false,
+  sfxEnabled: true,
+  bgmInterval: null,
+  stepCounter: 0,
+
+  init() {
+    if (!this.ctx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new AudioCtx();
+      this.bgmGain = this.ctx.createGain();
+      this.bgmGain.gain.value = 0.15;
+      this.bgmGain.connect(this.ctx.destination);
+      this.sfxGain = this.ctx.createGain();
+      this.sfxGain.gain.value = 0.35;
+      this.sfxGain.connect(this.ctx.destination);
+    }
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+  },
+
+  toggleBgm() {
+    this.init();
+    const btn = document.getElementById('btn-toggle-bgm');
+    if (this.bgmPlaying) {
+      this.stopBgm();
+      btn.classList.remove('active');
+      btn.innerHTML = '<span>🎵 BGM: OFF</span>';
+    } else {
+      this.startBgm();
+      btn.classList.add('active');
+      btn.innerHTML = '<span>🎶 BGM: ON</span>';
+    }
+  },
+
+  toggleSfx() {
+    this.sfxEnabled = !this.sfxEnabled;
+    const btn = document.getElementById('btn-toggle-sfx');
+    btn.classList.toggle('active', this.sfxEnabled);
+    btn.innerHTML = this.sfxEnabled ? '<span>🔔 SFX: ON</span>' : '<span>🔕 SFX: OFF</span>';
+  },
+
+  startBgm() {
+    this.bgmPlaying = true;
+    this.stepCounter = 0;
+    const chords = [
+      [146.83, 220.00, 261.63, 329.63], // Dm7
+      [196.00, 246.94, 293.66, 349.23], // G7
+      [130.81, 196.00, 261.63, 329.63], // Cmaj7
+      [220.00, 277.18, 329.63, 392.00]  // A7
+    ];
+    this.bgmInterval = setInterval(() => {
+      if (!this.bgmPlaying || !this.ctx) return;
+      const beat = this.stepCounter % 16;
+      const chord = chords[Math.floor(beat / 4)];
+      this.playTone(chord[0] / 2, 0.28, 'triangle', this.bgmGain, 0.35);
+      if (beat % 2 === 1 || beat % 4 === 0) {
+        chord.forEach((freq, idx) => {
+          setTimeout(() => this.playTone(freq * (idx === 3 ? 2 : 1), 0.18, 'sine', this.bgmGain, 0.18), idx * 15);
+        });
+      }
+      this.stepCounter++;
+    }, 280);
+  },
+
+  stopBgm() {
+    this.bgmPlaying = false;
+    if (this.bgmInterval) { clearInterval(this.bgmInterval); this.bgmInterval = null; }
+  },
+
+  playTone(freq, duration, type = 'sine', targetGain = null, volume = 0.5) {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+    g.gain.setValueAtTime(volume, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+    osc.connect(g);
+    g.connect(targetGain || this.sfxGain);
+    osc.start();
+    osc.stop(this.ctx.currentTime + duration);
+  },
+
+  playChip() { if (!this.sfxEnabled) return; this.init(); this.playTone(1800, 0.05, 'triangle', this.sfxGain, 0.4); },
+  playCard() { if (!this.sfxEnabled) return; this.init(); this.playTone(340, 0.08, 'triangle', this.sfxGain, 0.3); },
+  playWin() {
+    if (!this.sfxEnabled) return; this.init();
+    [523.25, 659.25, 783.99, 1046.50].forEach((n, i) => setTimeout(() => this.playTone(n, 0.35, 'square', this.sfxGain, 0.3), i * 90));
+  },
+  playLose() {
+    if (!this.sfxEnabled) return; this.init();
+    [392.00, 349.23, 311.13].forEach((n, i) => setTimeout(() => this.playTone(n, 0.3, 'sawtooth', this.sfxGain, 0.25), i * 110));
+  },
+  playWhistle() {
+    if (!this.sfxEnabled) return; this.init();
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(587.33, now);
+    osc.frequency.exponentialRampToValueAtTime(880.00, now + 0.35);
+    g.gain.setValueAtTime(0.3, now);
+    g.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+    osc.connect(g);
+    g.connect(this.sfxGain);
+    osc.start();
+    osc.stop(now + 0.6);
+  }
+};
+
+document.getElementById('btn-toggle-bgm').addEventListener('click', () => SoundEngine.toggleBgm());
+document.getElementById('btn-toggle-sfx').addEventListener('click', () => SoundEngine.toggleSfx());
+
+/**
+ * ===================================================================
+ * 2. Geographic Route Definition
+ * ===================================================================
+ */
+const TOURS = {
+  japan: {
+    name: "日本一周・鉄道幹線ツアー",
+    modeIcon: "🚄",
+    tickets: [
+      { name: "各駅停車 (在来線)", steps: 1, cost: 0, icon: "🚃", desc: "無料 (1駅移動)" },
+      { name: "特急列車", steps: 2, cost: 15000, icon: "🚆", desc: "15,000円 (2駅快速移動)" },
+      { name: "新幹線・超特急", steps: 3, cost: 35000, icon: "🚄", desc: "35,000円 (3駅高速移動)" }
+    ],
+    nodes: [
+      { id: 0, name: "東京", pref: "東京都", check: true, x: 0.72, y: 0.58, trivia: "日本の首都であり全国路線網の起点。丸の内赤レンガ駅舎は国指定重要文化財。", event: { text: "東京駅の駅弁屋で豪華駅弁を購入！旅の気力が充実。", money: -2000 } },
+      { id: 1, name: "名古屋", pref: "愛知県", check: false, x: 0.60, y: 0.64, trivia: "中京圏の中枢。喫茶店モーニング文化やリニア中央新幹線の主要建設拠点。", event: { text: "モーニングを頼んだら小倉トーストが付いてきて臨時ボーナス！", money: 3000 } },
+      { id: 2, name: "京都", pref: "京都府", check: false, x: 0.53, y: 0.65, trivia: "千年の都。金閣寺・清水寺など17の世界遺産を擁する国際観光都市。", event: { text: "清水寺へ参拝し、お守りを購入して散財。", money: -3000 } },
+      { id: 3, name: "新大阪", pref: "大阪府", check: true, x: 0.48, y: 0.68, trivia: "西日本最大の鉄道結節点。東海道・山陽新幹線の相互直通ターミナル。", event: { text: "道頓堀のたこ焼き屋台を手伝って大入りボーナス獲得！", money: 10000 } },
+      { id: 4, name: "岡山", pref: "岡山県", check: false, x: 0.41, y: 0.70, trivia: "「晴れの国」。瀬戸大橋線を通じて四国へ連絡する西日本の交通要衝。", event: { text: "名産の白桃パフェを食べてパワー回復。", money: -1500 } },
+      { id: 5, name: "広島", pref: "広島県", check: false, x: 0.34, y: 0.73, trivia: "原爆ドームと厳島神社、2つの世界遺産を抱える平和記念都市。", event: { text: "広島風お好み焼きを堪能！絶好調！", money: 0 } },
+      { id: 6, name: "博多", pref: "福岡県", check: true, x: 0.22, y: 0.77, trivia: "九州最大の経済中枢。山陽新幹線の終点かつ九州新幹線の起点。", event: { text: "中洲の屋台で地元の方と意気投合し、ご馳走してもらった！", money: 6000 } },
+      { id: 7, name: "熊本", pref: "熊本県", check: false, x: 0.19, y: 0.84, trivia: "「火の国・水の国」。加藤清正が築いた名城・熊本城が雄大に聳える。", event: { text: "阿蘇の大自然に癒やされるひととき。", money: 0 } },
+      { id: 8, name: "鹿児島中央", pref: "鹿児島県", check: true, x: 0.17, y: 0.92, trivia: "九州新幹線の終着駅。活火山・桜島を臨み、黒豚や薩摩切子が有名。", event: { text: "桜島の火山灰が降ってきた！洗車代・衣服クリーニング代が発生。", money: -4000 } },
+      { id: 9, name: "金沢", pref: "石川県", check: true, x: 0.54, y: 0.50, trivia: "加賀百万石の城下町。兼六園や近江町市場、北陸新幹線の主要ハブ。", event: { text: "近江町市場で海鮮丼を注文！大将がおまけしてくれた。", money: 7000 } },
+      { id: 10, name: "新潟", pref: "新潟県", check: false, x: 0.66, y: 0.43, trivia: "日本屈指の米どころ・銘酒の産地。上越新幹線で東京と直結。", event: { text: "大雪の影響で暖房費と除雪協力金が発生。", money: -5000 } },
+      { id: 11, name: "仙台", pref: "宮城県", check: false, x: 0.77, y: 0.40, trivia: "伊達政宗公が開いた「杜の都」。東北最大の政治・経済の中心地。", event: { text: "名物の極厚牛たん定食を食べて士気上昇！", money: 0 } },
+      { id: 12, name: "青森", pref: "青森県", check: false, x: 0.78, y: 0.26, trivia: "本州最北端の要所。青函トンネルを通じて北海道新幹線へと繋がる。", event: { text: "ねぶた祭りの跳人（ハネト）として参加！臨時おひねりを獲得。", money: 5000 } },
+      { id: 13, name: "札幌", pref: "北海道", check: true, x: 0.82, y: 0.12, trivia: "北の大都市。日本最大の食料生産地・北海道の政治経済中枢。", event: { text: "すすきのの味噌ラーメンを堪能！", money: -2000 } }
+    ]
+  }
+};
+
+/**
+ * ===================================================================
+ * 3. Discord Activity & Firebase Multiplayer Synchronizer
+ * ===================================================================
+ */
+const MultiGame = {
+  myUserId: "user_" + Math.random().toString(36).substring(2, 8),
+  myUserName: "Player",
+  myAvatar: "🧑‍✈️",
+  roomId: "test-channel",
+  isHost: false,
+
+  // Synchronized Remote State
+  state: {
+    players: {},
+    playerOrder: [],
+    turnIndex: 0,
+    phase: 'BET', // 'BET' | 'PLAYING_BJ' | 'TRAVEL' | 'MODAL' | 'OVER'
+    currentBet: 0,
+    deck: [],
+    dealerHand: [],
+    playerHand: [],
+    modal: { show: false, title: "", sub: "", body: "", icon: "🌸" }
+  },
+
+  async start() {
+    // 1. Try Discord Embedded App SDK connection
+    try {
+      if (window.DiscordSDK) {
+        const discordSdk = new window.DiscordSDK.DiscordSDK(window.DISCORD_CLIENT_ID || "1234567890");
+        await discordSdk.ready();
+        this.roomId = discordSdk.channelId || "discord-room";
+        this.myUserId = discordSdk.instanceId || this.myUserId;
+        console.log("Discord Embedded App SDK Ready! Room:", this.roomId);
+      }
+    } catch (e) {
+      console.warn("Running outside Discord or standalone test mode:", e);
+    }
+
+    // Check Room Query Parameter if present
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('room')) {
+      this.roomId = urlParams.get('room');
+    }
+    document.getElementById('room-display').innerText = `ROOM: ${this.roomId}`;
+
+    // 2. Initialize Firebase Realtime Database
+    const savedConfig = localStorage.getItem('firebase_config');
+    if (!savedConfig) {
+      document.getElementById('config-modal').classList.add('show');
+    } else {
+      this.connectFirebase(JSON.parse(savedConfig));
+    }
+
+    MapRenderer.init();
+    AmbientCanvas.init();
+  },
+
+  connectFirebase(config) {
+    window.FirebaseBridge.init(config, this.roomId);
+
+    // Listen to Remote State changes
+    window.FirebaseBridge.listen((remoteState) => {
+      this.state = remoteState;
+      this.render();
+    });
+
+    // Register / Join Room
+    setTimeout(() => this.joinRoom(), 500);
+  },
+
+  joinRoom() {
+    // Check if player already registered
+    const avatarList = ["🚄", "🚅", "🛫", "💺", "🚢", "🏍️"];
+    const pKeys = Object.keys(this.state.players || {});
+    this.isHost = pKeys.length === 0;
+
+    const myData = {
+      id: this.myUserId,
+      name: this.myUserName + " (" + (pKeys.length + 1) + ")",
+      avatar: avatarList[pKeys.length % avatarList.length],
+      money: 30000,
+      debt: 0,
+      pos: 0,
+      checks: []
+    };
+
+    if (!this.state.players || !this.state.players[this.myUserId]) {
+      const updatedPlayers = { ...(this.state.players || {}), [this.myUserId]: myData };
+      const order = [...(this.state.playerOrder || [])];
+      if (!order.includes(this.myUserId)) order.push(this.myUserId);
+
+      window.FirebaseBridge.updateState({
+        players: updatedPlayers,
+        playerOrder: order
+      });
+      this.showToast("ルームに参加しました！");
+    }
+  },
+
+  get activePlayerId() {
+    if (!this.state.playerOrder || this.state.playerOrder.length === 0) return null;
+    return this.state.playerOrder[this.state.turnIndex % this.state.playerOrder.length];
+  },
+
+  get isMyTurn() {
+    return this.activePlayerId === this.myUserId;
+  },
+
+  showToast(msg) {
+    const el = document.getElementById('toast-msg');
+    el.innerText = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2500);
+  },
+
+  // ---------------- BLACKJACK SYNCHRONIZED ----------------
+  createDeck() {
+    const suits = ['♠', '♥', '♦', '♣'];
+    const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+    const deck = [];
+    for (let s of suits) {
+      for (let r of ranks) {
+        deck.push({ suit: s, rank: r, red: s === '♥' || s === '♦' });
+      }
+    }
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    return deck;
+  },
+
+  calcHand(hand) {
+    if (!hand) return 0;
+    let val = 0, aces = 0;
+    for (let c of hand) {
+      if (['J', 'Q', 'K'].includes(c.rank)) val += 10;
+      else if (c.rank === 'A') { val += 11; aces++; }
+      else val += parseInt(c.rank);
+    }
+    while (val > 21 && aces > 0) { val -= 10; aces--; }
+    return val;
+  },
+
+  placeBet(amount) {
+    if (!this.isMyTurn) return;
+    const me = this.state.players[this.myUserId];
+    let bet = amount === 'ALL' ? me.money : amount;
+    if (bet <= 0 || me.money < bet) {
+      this.showToast("所持金が足りません！");
+      return;
+    }
+
+    SoundEngine.playChip();
+    const deck = this.createDeck();
+    const pHand = [deck.pop(), deck.pop()];
+    const dHand = [deck.pop(), deck.pop()];
+
+    window.FirebaseBridge.updateState({
+      phase: 'PLAYING_BJ',
+      currentBet: bet,
+      deck: deck,
+      playerHand: pHand,
+      dealerHand: dHand
+    });
+  },
+
+  takeLoan() {
+    if (!this.isMyTurn) return;
+    const me = this.state.players[this.myUserId];
+    me.money += 50000;
+    me.debt += 65000;
+    SoundEngine.playChip();
+    window.FirebaseBridge.updateState({
+      [`players/${this.myUserId}`]: me
+    });
+    this.showToast("⚠️ ヤミ金から50,000円借りました！");
+  },
+
+  hit() {
+    if (!this.isMyTurn) return;
+    SoundEngine.playCard();
+    const deck = [...this.state.deck];
+    const pHand = [...(this.state.playerHand || [])];
+    pHand.push(deck.pop());
+    const val = this.calcHand(pHand);
+
+    if (val > 21) {
+      // Bust
+      SoundEngine.playLose();
+      const me = this.state.players[this.myUserId];
+      me.money -= this.state.currentBet;
+      window.FirebaseBridge.updateState({
+        deck: deck,
+        playerHand: pHand,
+        phase: 'TRAVEL',
+        [`players/${this.myUserId}`]: me
+      });
+      this.showToast(`💥 バースト！ (${val}) -${this.state.currentBet.toLocaleString()}円`);
+    } else {
+      window.FirebaseBridge.updateState({
+        deck: deck,
+        playerHand: pHand
+      });
+    }
+  },
+
+  stand() {
+    if (!this.isMyTurn) return;
+    const deck = [...this.state.deck];
+    const dHand = [...(this.state.dealerHand || [])];
+    while (this.calcHand(dHand) < 17) {
+      dHand.push(deck.pop());
+    }
+
+    const pScore = this.calcHand(this.state.playerHand);
+    const dScore = this.calcHand(dHand);
+    const me = this.state.players[this.myUserId];
+
+    if (dScore > 21 || pScore > dScore) {
+      const isNatural = pScore === 21 && this.state.playerHand.length === 2;
+      const prize = isNatural ? Math.floor(this.state.currentBet * 1.5) : this.state.currentBet;
+      me.money += prize;
+      SoundEngine.playWin();
+      this.showToast(`🎉 勝利！ +${prize.toLocaleString()}円`);
+    } else if (pScore === dScore) {
+      this.showToast("🤝 引き分け (Push)");
+    } else {
+      me.money -= this.state.currentBet;
+      SoundEngine.playLose();
+      this.showToast(`💀 敗北… -${this.state.currentBet.toLocaleString()}円`);
+    }
+
+    window.FirebaseBridge.updateState({
+      deck: deck,
+      dealerHand: dHand,
+      phase: 'TRAVEL',
+      [`players/${this.myUserId}`]: me
+    });
+  },
+
+  doubleDown() {
+    if (!this.isMyTurn) return;
+    const me = this.state.players[this.myUserId];
+    if (me.money < this.state.currentBet * 2) {
+      this.showToast("所持金が足りずダブルダウンできません！");
+      return;
+    }
+    const deck = [...this.state.deck];
+    const pHand = [...(this.state.playerHand || [])];
+    pHand.push(deck.pop());
+    window.FirebaseBridge.updateState({
+      currentBet: this.state.currentBet * 2,
+      deck: deck,
+      playerHand: pHand
+    });
+    this.stand();
+  },
+
+  // ---------------- TRAVEL & MODALS ----------------
+  executeTravel(ticket, destIdx) {
+    if (!this.isMyTurn) return;
+    const me = this.state.players[this.myUserId];
+    me.money -= ticket.cost;
+    me.pos = destIdx;
+    SoundEngine.playWhistle();
+
+    const node = TOURS.japan.nodes[destIdx];
+    if (node.check && !me.checks.includes(node.id)) {
+      me.checks.push(node.id);
+    }
+
+    // Victory Check
+    const reqChecks = TOURS.japan.nodes.filter(n => n.check).length;
+    if (me.pos === 0 && me.checks.length >= reqChecks && me.debt === 0) {
+      ConfettiSystem.start();
+      SoundEngine.playWin();
+      window.FirebaseBridge.updateState({
+        phase: 'OVER',
+        modal: {
+          show: true,
+          title: "👑 GRAND TOUR COMPLETE!",
+          sub: `${me.name} の完全優勝！`,
+          body: `<p>全チェックポイントを制覇し、借金を完済してゴールしました！<br>最終総資産: <strong>${me.money.toLocaleString()}円</strong></p>`,
+          icon: "🏆"
+        },
+        [`players/${this.myUserId}`]: me
+      });
+      return;
+    }
+
+    // Local Event
+    let evtHtml = `<p><strong>【地域豆知識】</strong><br>${node.trivia}</p>`;
+    if (node.event) {
+      me.money = Math.max(0, me.money + node.event.money);
+      evtHtml += `<div style="margin-top:10px; padding:10px; background:rgba(255,215,0,0.1); border-radius:8px;">
+        🎁 <strong>ご当地イベント:</strong> ${node.event.text}<br>
+        変動額: <strong>${node.event.money >= 0 ? `+${node.event.money.toLocaleString()}` : `${node.event.money.toLocaleString()}`}円</strong>
+      </div>`;
+    }
+
+    window.FirebaseBridge.updateState({
+      phase: 'MODAL',
+      modal: {
+        show: true,
+        title: `📍 ${node.name} 到着！`,
+        sub: node.pref || '',
+        body: evtHtml,
+        icon: "🏯"
+      },
+      [`players/${this.myUserId}`]: me
+    });
+  },
+
+  closeModal() {
+    if (!this.isMyTurn) {
+      document.getElementById('game-modal').classList.remove('show');
+      return;
+    }
+    // Advance to next player
+    const nextIdx = (this.state.turnIndex + 1) % this.state.playerOrder.length;
+    window.FirebaseBridge.updateState({
+      phase: 'BET',
+      turnIndex: nextIdx,
+      currentBet: 0,
+      playerHand: [],
+      dealerHand: [],
+      modal: { show: false }
+    });
+  },
+
+  // ---------------- UI RENDER LOOP ----------------
+  render() {
+    const isTurn = this.isMyTurn;
+    const phase = this.state.phase;
+
+    // Controls display based on turn and phase
+    document.getElementById('spectator-banner').style.display = !isTurn ? 'block' : 'none';
+    document.getElementById('bet-row').style.display = (isTurn && phase === 'BET') ? 'flex' : 'none';
+    document.getElementById('action-row').style.display = (isTurn && phase === 'PLAYING_BJ') ? 'flex' : 'none';
+    document.getElementById('travel-section').style.display = (isTurn && phase === 'TRAVEL') ? 'flex' : 'none';
+
+    // Player Grid
+    const grid = document.getElementById('players-grid');
+    grid.innerHTML = '';
+    const reqChecks = TOURS.japan.nodes.filter(n => n.check).length;
+
+    (this.state.playerOrder || []).forEach((uid, idx) => {
+      const p = (this.state.players || {})[uid];
+      if (!p) return;
+      const node = TOURS.japan.nodes[p.pos || 0];
+      const isPlayerTurn = idx === (this.state.turnIndex % this.state.playerOrder.length);
+      const isMe = uid === this.myUserId;
+
+      const card = document.createElement('div');
+      card.className = `player-card ${isPlayerTurn ? 'active-turn' : ''}`;
+      card.innerHTML = `
+        <div class="p-header">
+          <div class="p-avatar">${p.avatar}</div>
+          <div>
+            <div class="p-name">${p.name} ${isMe ? '(自分)' : ''}</div>
+            <div class="p-location">📍 ${node.name}</div>
+          </div>
+        </div>
+        <div class="p-stats">
+          <div class="p-money">${p.money.toLocaleString()}円</div>
+          ${p.debt > 0 ? `<div class="p-debt">借: ${p.debt.toLocaleString()}円</div>` : ''}
+        </div>
+        <div class="p-checkpoints">CP: ${(p.checks || []).length} / ${reqChecks}</div>
+      `;
+      grid.appendChild(card);
+    });
+
+    // Cards display
+    const dContainer = document.getElementById('dealer-cards');
+    const pContainer = document.getElementById('player-cards');
+    dContainer.innerHTML = '';
+    pContainer.innerHTML = '';
+
+    const showDealer = phase === 'TRAVEL' || phase === 'OVER';
+    (this.state.dealerHand || []).forEach((c, idx) => {
+      const el = document.createElement('div');
+      if (idx === 1 && !showDealer) {
+        el.className = 'card-item hidden-card';
+      } else {
+        el.className = `card-item ${c.red ? 'red' : ''}`;
+        el.innerHTML = `<div class="card-corner">${c.rank}</div><div class="card-center">${c.suit}</div><div class="card-corner" style="text-align:right;">${c.rank}</div>`;
+      }
+      dContainer.appendChild(el);
+    });
+
+    (this.state.playerHand || []).forEach(c => {
+      const el = document.createElement('div');
+      el.className = `card-item ${c.red ? 'red' : ''}`;
+      el.innerHTML = `<div class="card-corner">${c.rank}</div><div class="card-center">${c.suit}</div><div class="card-corner" style="text-align:right;">${c.rank}</div>`;
+      pContainer.appendChild(el);
+    });
+
+    document.getElementById('dealer-score').innerText = showDealer ? this.calcHand(this.state.dealerHand) : '?';
+    document.getElementById('player-score').innerText = this.calcHand(this.state.playerHand);
+
+    // Active player name
+    const activeP = (this.state.players || {})[this.activePlayerId];
+    if (activeP) {
+      document.getElementById('player-hand-name').innerText = activeP.name;
+      document.getElementById('travel-curr-location').innerText = `現在地: ${TOURS.japan.nodes[activeP.pos || 0].name}`;
+    }
+
+    // Travel Tickets
+    if (isTurn && phase === 'TRAVEL' && activeP) {
+      const tGrid = document.getElementById('ticket-grid');
+      tGrid.innerHTML = '';
+      const total = TOURS.japan.nodes.length;
+      [{ label: "順方向 (東/下り)", dir: 1 }, { label: "逆方向 (西/上り)", dir: -1 }].forEach(d => {
+        TOURS.japan.tickets.forEach(t => {
+          const destIdx = (activeP.pos + t.steps * d.dir + total) % total;
+          const destNode = TOURS.japan.nodes[destIdx];
+          const canAfford = activeP.money >= t.cost;
+
+          const ticket = document.createElement('div');
+          ticket.className = `ticket-card ${canAfford ? '' : 'disabled'}`;
+          ticket.innerHTML = `
+            <div>
+              <div class="ticket-name">${t.icon} ${t.name}</div>
+              <div style="font-size:10px; color:#94a3b8;">${d.label} • ${t.steps}駅分</div>
+            </div>
+            <div class="ticket-dest">➡️ ${destNode.name}</div>
+            <div class="ticket-cost">${t.cost === 0 ? '無料' : `${t.cost.toLocaleString()}円`}</div>
+          `;
+          if (canAfford) {
+            ticket.onclick = () => this.executeTravel(t, destIdx);
+          }
+          tGrid.appendChild(ticket);
+        });
+      });
+    }
+
+    // Modal
+    const modal = this.state.modal;
+    const modalEl = document.getElementById('game-modal');
+    if (modal && modal.show) {
+      document.getElementById('modal-title').innerText = modal.title;
+      document.getElementById('modal-sub').innerText = modal.sub;
+      document.getElementById('modal-body').innerHTML = modal.body;
+      document.getElementById('modal-icon').innerText = modal.icon || "🌸";
+      modalEl.classList.add('show');
+    } else {
+      modalEl.classList.remove('show');
+    }
+
+    MapRenderer.draw();
+  }
+};
+
+window.MultiGame = MultiGame;
+
+window.saveFirebaseConfig = function() {
+  const dbUrl = document.getElementById('cfg-db-url').value.trim();
+  const apiKey = document.getElementById('cfg-api-key').value.trim();
+  const projectId = document.getElementById('cfg-project-id').value.trim();
+
+  if (!dbUrl || !apiKey || !projectId) {
+    alert("すべての項目を入力してください！");
+    return;
+  }
+
+  const config = { databaseURL: dbUrl, apiKey: apiKey, projectId: projectId };
+  localStorage.setItem('firebase_config', JSON.stringify(config));
+  document.getElementById('config-modal').classList.remove('show');
+  MultiGame.connectFirebase(config);
+};
+
+/**
+ * ===================================================================
+ * 4. Interactive Route Map Canvas
+ * ===================================================================
+ */
+const MapRenderer = {
+  canvas: null,
+  ctx: null,
+  init() {
+    this.canvas = document.getElementById('route-canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.resize();
+    window.addEventListener('resize', () => this.resize());
+  },
+  resize() {
+    const rect = this.canvas.parentElement.getBoundingClientRect();
+    this.canvas.width = rect.width * window.devicePixelRatio;
+    this.canvas.height = rect.height * window.devicePixelRatio;
+    this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    this.w = rect.width;
+    this.h = rect.height;
+    this.draw();
+  },
+  draw() {
+    if (!this.ctx) return;
+    const ctx = this.ctx;
+    const w = this.w;
+    const h = this.h;
+    const nodes = TOURS.japan.nodes;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Track
+    ctx.beginPath();
+    nodes.forEach((n, idx) => {
+      const nx = n.x * w;
+      const ny = n.y * h;
+      if (idx === 0) ctx.moveTo(nx, ny);
+      else ctx.lineTo(nx, ny);
+    });
+    ctx.closePath();
+    ctx.strokeStyle = 'rgba(0, 242, 254, 0.4)';
+    ctx.lineWidth = 4;
+    ctx.shadowColor = '#00f2fe';
+    ctx.shadowBlur = 10;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Nodes
+    nodes.forEach(n => {
+      const nx = n.x * w;
+      const ny = n.y * h;
+      ctx.beginPath();
+      ctx.arc(nx, ny, n.check ? 8 : 5, 0, Math.PI * 2);
+      ctx.fillStyle = n.check ? '#ffdf6d' : '#38bdf8';
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(n.name, nx, ny - 11);
+    });
+
+    // Players on Map
+    const players = MultiGame.state.players || {};
+    (MultiGame.state.playerOrder || []).forEach((uid, pIdx) => {
+      const p = players[uid];
+      if (!p) return;
+      const node = nodes[p.pos || 0];
+      const px = node.x * w + (pIdx - 1) * 14;
+      const py = node.y * h + 13;
+
+      ctx.font = '16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(p.avatar, px, py);
+    });
+  }
+};
+
+/**
+ * ===================================================================
+ * 5. Ambient & Confetti Canvases
+ * ===================================================================
+ */
+const AmbientCanvas = {
+  canvas: null,
+  ctx: null,
+  particles: [],
+  init() {
+    this.canvas = document.getElementById('ambient-canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.w = window.innerWidth;
+    this.h = window.innerHeight;
+    this.canvas.width = this.w;
+    this.canvas.height = this.h;
+    for (let i = 0; i < 35; i++) {
+      this.particles.push({
+        x: Math.random() * this.w,
+        y: Math.random() * this.h,
+        size: Math.random() * 2 + 1,
+        speedX: (Math.random() - 0.5) * 0.4,
+        speedY: (Math.random() - 0.5) * 0.4,
+        alpha: Math.random() * 0.5 + 0.2
+      });
+    }
+    this.loop();
+  },
+  loop() {
+    this.ctx.clearRect(0, 0, this.w, this.h);
+    this.particles.forEach(p => {
+      p.x += p.speedX; p.y += p.speedY;
+      if (p.x < 0) p.x = this.w; if (p.x > this.w) p.x = 0;
+      if (p.y < 0) p.y = this.h; if (p.y > this.h) p.y = 0;
+      this.ctx.beginPath();
+      this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      this.ctx.fillStyle = `rgba(100, 200, 255, ${p.alpha})`;
+      this.ctx.fill();
+    });
+    requestAnimationFrame(() => this.loop());
+  }
+};
+
+const ConfettiSystem = {
+  canvas: null, ctx: null, particles: [], active: false,
+  start() {
+    this.canvas = document.getElementById('confetti-canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+    this.particles = [];
+    this.active = true;
+    for (let i = 0; i < 150; i++) {
+      this.particles.push({
+        x: this.canvas.width / 2, y: this.canvas.height / 2,
+        vx: (Math.random() - 0.5) * 16, vy: (Math.random() - 0.7) * 18,
+        color: ['#ffdf6d', '#00f2fe', '#ff007f', '#4facfe'][Math.floor(Math.random() * 4)],
+        size: Math.random() * 8 + 4, rot: Math.random() * 360, rotSpeed: (Math.random() - 0.5) * 10
+      });
+    }
+    this.loop();
+  },
+  loop() {
+    if (!this.active) return;
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.vy += 0.35; p.rot += p.rotSpeed;
+      this.ctx.save();
+      this.ctx.translate(p.x, p.y);
+      this.ctx.rotate((p.rot * Math.PI) / 180);
+      this.ctx.fillStyle = p.color;
+      this.ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+      this.ctx.restore();
+    });
+    requestAnimationFrame(() => this.loop());
+  }
+};
+
+// Start Multiplayer
+window.addEventListener('DOMContentLoaded', () => {
+  MultiGame.start();
+});
+</script>
+</body>
+</html>
